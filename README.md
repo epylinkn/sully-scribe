@@ -33,7 +33,7 @@ As a doctor
 When I click record
 I can record a session
 And when I click stop
-I can rend recording of a session
+I can end recording of a session
 
 --------
 
