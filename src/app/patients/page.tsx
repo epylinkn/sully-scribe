@@ -49,6 +49,7 @@ export default function PatientView() {
         Authorization: `Bearer ${EPHEMERAL_KEY}`,
         "Content-Type": "application/sdp",
       },
+
     });
 
     const answer: RTCSessionDescriptionInit = {
@@ -81,7 +82,7 @@ export default function PatientView() {
   }
 
   // Send a message to the model
-  function sendClientEvent(message) {
+  function sendClientEvent(message: any) {
     if (dataChannel) {
       message.event_id = message.event_id || crypto.randomUUID();
       dataChannel.send(JSON.stringify(message));
