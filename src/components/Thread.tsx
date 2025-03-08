@@ -1,91 +1,124 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '@/store';
 
-interface AudioTranscriptEvent {
-  type: string;
-  audio_transcript?: {
-    text: string;
-  };
-  transcript?: string;
-  event_id: string;
-}
+const functionDescription = `
+Call this function to translate the patient's speech to English.
+`;
 
-function TranscriptMessage({ event, timestamp }: { event: AudioTranscriptEvent; timestamp: string }) {
-  const isUserMessage = event.event_id && !event.event_id.startsWith("event_");
-  const text = event.transcript || '';
-  const isPartial = event.type === "audio_transcript.partial";
+const sessionUpdate = {
+  type: "session.update",
+  session: {
+    tools: [
+      {
+        type: "function",
+        name: "translate_to_english",
+        description: functionDescription,
+        parameters: {
+          type: "object",
+          strict: true,
+          properties: {
+            language: {
+              type: "string",
+              description: "The language to translate to.",
+            },
+            input: {
+              type: "string",
+              description: "The text to translate.",
+            },
+            output: {
+              type: "string",
+              description: "The translated text.",
+            },
+          },
+          required: ["language", "input", "output"],
+        },
+      },
+    ],
+    tool_choice: "auto",
+  },
+};
+
+function FunctionCallOutput({ functionCallOutput }: { functionCallOutput: any }) {
+  const { language, input, output } = JSON.parse(functionCallOutput.arguments);
 
   return (
-    <div 
-      className={`
-        flex flex-col gap-2 p-6 rounded-2xl shadow-sm max-w-3xl mx-auto w-full
-        ${isUserMessage 
-          ? 'bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-100' 
-          : 'bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-100'
+    <div className="flex flex-col gap-2">
+      <p>Language: {language}</p>
+      <p>Input: {input}</p>
+      <p>Output: {output}</p>
+      <pre className="text-xs bg-gray-100 rounded-md p-2 overflow-x-auto">
+        {JSON.stringify(functionCallOutput, null, 2)}
+      </pre>
+    </div>
+  );
+}
+
+export default function Thread() {
+  const dispatch = useDispatch();
+  const events = useSelector((state: RootState) => state.events.events);
+  const isSessionActive = useSelector((state: RootState) => state.events.isSessionActive);
+  const [functionAdded, setFunctionAdded] = useState(false);
+  const [functionCallOutput, setFunctionCallOutput] = useState(null);
+
+  useEffect(() => {
+    if (!events || events.length === 0) return;
+
+    const firstEvent = events[events.length - 1];
+    if (!functionAdded && firstEvent.type === "session.created") {
+      dispatch({ type: sessionUpdate.type, payload: sessionUpdate });
+      setFunctionAdded(true);
+    }
+
+    const mostRecentEvent = events[0];
+    if (
+      mostRecentEvent.type === "response.done" &&
+      mostRecentEvent.response?.output
+    ) {
+      mostRecentEvent.response.output.forEach((output: any) => {
+        if (
+          output.type === "function_call" &&
+          output.name === "translate_to_english"
+        ) {
+          setFunctionCallOutput(output);
+          setTimeout(() => {
+            dispatch({
+              type: "response.create",
+              payload: {
+                response: {
+                  instructions: `
+                  repeat the translation in the language of the patient.
+                `,
+                },
+              },
+            });
+          }, 500);
         }
-      `}
-    >
-      <div className="flex items-center gap-3">
-        <div className={`
-          w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium
-          ${isUserMessage ? 'bg-blue-500' : 'bg-gray-700'}
-        `}>
-          {isUserMessage ? 'Y' : 'A'}
-        </div>
-        <span className="font-semibold text-gray-900">
-          {isUserMessage ? 'You' : 'Assistant'}
-        </span>
-        <span className="text-sm text-gray-500">
-          {timestamp}
-        </span>
-        {isPartial && (
-          <span className="
-            text-xs px-3 py-1 bg-yellow-50 text-yellow-700 border border-yellow-200 
-            rounded-full font-medium animate-pulse
-          ">
-            transcribing...
-          </span>
+      });
+    }
+  }, [events, functionAdded, dispatch]);
+
+  useEffect(() => {
+    if (!isSessionActive) {
+      setFunctionAdded(false);
+      setFunctionCallOutput(null);
+    }
+  }, [isSessionActive]);
+
+  return (
+    <section className="h-full w-full flex flex-col gap-4">
+      <div className="h-full bg-gray-50 rounded-md p-4">
+        <h2 className="text-lg font-bold">Thread</h2>
+        {isSessionActive ? (
+          functionCallOutput ? (
+            <FunctionCallOutput functionCallOutput={functionCallOutput} />
+          ) : (
+            <p>Waiting for speech...</p>
+          )
+        ) : (
+          <p>The session is not active.</p>
         )}
       </div>
-      <div className={`
-        pl-11 text-gray-700 whitespace-pre-wrap
-        ${!isPartial ? 'text-gray-900' : 'text-gray-600 italic'}
-      `}>
-        {text || 'Processing audio...'}
-      </div>
-    </div>
-  );
-}
-
-export default function Thread({ events }: { events: AudioTranscriptEvent[] }) {
-  const transcriptEvents = events.filter(event => 
-    event.type === "audio_transcript.partial" || 
-    event.type === "audio_transcript.final" ||
-    event.type === "response.audio_transcript.done"
-  );
-
-  if (transcriptEvents.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-4">
-        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-          </svg>
-        </div>
-        <p className="text-lg font-medium">No transcripts yet</p>
-        <p className="text-sm text-gray-400">Start speaking to begin the conversation</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
-      {transcriptEvents.map((event) => (
-        <TranscriptMessage
-          key={event.event_id}
-          event={event}
-          timestamp={new Date().toLocaleTimeString()}
-        />
-      ))}
-    </div>
+    </section>
   );
 }

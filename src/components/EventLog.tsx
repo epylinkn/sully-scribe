@@ -1,63 +1,52 @@
-import { useState } from "react";
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store';
 
-function Event({ event, timestamp }: { event: any; timestamp: string }) {
-  const [isExpanded, setIsExpanded] = useState(false);
+interface Event {
+  type: string;
+  event_id: string;
+  [key: string]: any;
+}
 
+function EventItem({ event }: { event: Event }) {
   const isClient = event.event_id && !event.event_id.startsWith("event_");
+  const timestamp = new Date().toLocaleTimeString();
 
   return (
-    <div className="flex flex-col gap-2 p-2 rounded-md bg-gray-50">
-      <div
-        className="flex items-center gap-2 cursor-pointer"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        {isClient ? <>client</> : <>server</>}
-        <div className="text-sm text-gray-500">
-          {isClient ? "client:" : "server:"}
-          &nbsp;{event.type} | {timestamp}
-        </div>
+    <div className="flex flex-col gap-2 p-4 rounded-lg bg-white shadow-sm">
+      <div className="flex items-center gap-2">
+        <span className={`text-sm font-medium ${isClient ? 'text-blue-600' : 'text-gray-600'}`}>
+          {isClient ? 'Client' : 'Server'}
+        </span>
+        <span className="text-sm text-gray-500">
+          {event.type}
+        </span>
+        <span className="text-xs text-gray-400">
+          {timestamp}
+        </span>
       </div>
-      <div
-        className={`text-gray-500 bg-gray-200 p-2 rounded-md overflow-x-auto ${
-          isExpanded ? "block" : "hidden"
-        }`}
-      >
-        <pre className="text-xs">{JSON.stringify(event, null, 2)}</pre>
-      </div>
+      <pre className="text-xs bg-gray-50 p-2 rounded overflow-x-auto">
+        {JSON.stringify(event, null, 2)}
+      </pre>
     </div>
   );
 }
 
-export default function EventLog({ events }: { events: any[] }) {
-  const eventsToDisplay: React.ReactNode[] = [];
-  const deltaEvents: Record<string, any> = {};
+export default function EventLog() {
+  const events = useSelector((state: RootState) => state.events.events);
 
-  events.forEach((event) => {
-    if (event.type.endsWith("delta")) {
-      if (deltaEvents[event.type]) {
-        // for now just log a single event per render pass
-        return;
-      } else {
-        deltaEvents[event.type] = event;
-      }
-    }
-
-    eventsToDisplay.push(
-      <Event
-        key={event.event_id}
-        event={event}
-        timestamp={new Date().toLocaleTimeString()}
-      />
+  if (events.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-500">
+        No events yet
+      </div>
     );
-  });
+  }
 
   return (
-    <div className="flex flex-col gap-2 overflow-x-auto">
-      {events.length === 0 ? (
-        <div className="text-gray-500">Awaiting events...</div>
-      ) : (
-        eventsToDisplay
-      )}
+    <div className="flex flex-col gap-4 p-4">
+      {events.map((event) => (
+        <EventItem key={event.event_id} event={event} />
+      ))}
     </div>
   );
 }

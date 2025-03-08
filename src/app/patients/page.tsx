@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react';
+import { useRef } from 'react';
+import { useDispatch } from 'react-redux';
 import SessionControls from '@/components/SessionControls';
 import EventLog from '@/components/EventLog';
 import Thread from '@/components/Thread';
+import { addEvent, clearEvents, setSessionActive } from '@/store/events';
 
 export default function PatientView() {
-  const [isSessionActive, setIsSessionActive] = useState(false);
-  const [events, setEvents] = useState<any[]>([]);
-  const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
+  const dispatch = useDispatch();
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const audioElement = useRef<HTMLAudioElement | null>(null);
+  const dataChannelRef = useRef<RTCDataChannel | null>(null);
 
   async function startSession() {
     // Get an ephemeral key
@@ -34,7 +35,18 @@ export default function PatientView() {
 
     // Set up data channel for sending and receiving events
     const dc = pc.createDataChannel("oai-events");
-    setDataChannel(dc);
+    dataChannelRef.current = dc;
+
+    // Set up data channel event handlers
+    dc.addEventListener("message", (e) => {
+      const event = JSON.parse(e.data);
+      dispatch(addEvent(event));
+    });
+
+    dc.addEventListener("open", () => {
+      dispatch(setSessionActive(true));
+      dispatch(clearEvents());
+    });
 
     // Start the session using the Session Description Protocol (SDP)
     const offer = await pc.createOffer();
@@ -49,7 +61,6 @@ export default function PatientView() {
         Authorization: `Bearer ${EPHEMERAL_KEY}`,
         "Content-Type": "application/sdp",
       },
-
     });
 
     const answer: RTCSessionDescriptionInit = {
@@ -62,31 +73,29 @@ export default function PatientView() {
   }
 
   function stopSession() {
-    if (dataChannel) {
-      dataChannel.close();
+    if (dataChannelRef.current) {
+      dataChannelRef.current.close();
     }
 
-    peerConnection.current!.getSenders().forEach((sender) => {
-      if (sender.track) {
-        sender.track.stop();
-      }
-    });
-
     if (peerConnection.current) {
+      peerConnection.current.getSenders().forEach((sender) => {
+        if (sender.track) {
+          sender.track.stop();
+        }
+      });
       peerConnection.current.close();
     }
 
-    setIsSessionActive(false);
-    setDataChannel(null);
+    dispatch(setSessionActive(false));
+    dataChannelRef.current = null;
     peerConnection.current = null;
   }
 
-  // Send a message to the model
   function sendClientEvent(message: any) {
-    if (dataChannel) {
+    if (dataChannelRef.current) {
       message.event_id = message.event_id || crypto.randomUUID();
-      dataChannel.send(JSON.stringify(message));
-      setEvents((prev) => [message, ...prev]);
+      dataChannelRef.current.send(JSON.stringify(message));
+      dispatch(addEvent(message));
     } else {
       console.error(
         "Failed to send message - no data channel available",
@@ -94,22 +103,6 @@ export default function PatientView() {
       );
     }
   }
-
-  // Attach event listeners to the data channel when a new one is created
-  useEffect(() => {
-    if (dataChannel) {
-      // Append new server events to the list
-      dataChannel.addEventListener("message", (e) => {
-        setEvents((prev) => [JSON.parse(e.data), ...prev]);
-      });
-
-      // Set session active when the data channel is opened
-      dataChannel.addEventListener("open", () => {
-        setIsSessionActive(true);
-        setEvents([]);
-      });
-    }
-  }, [dataChannel]);
 
   return (
     <>
@@ -121,24 +114,17 @@ export default function PatientView() {
       <main className="absolute top-16 left-0 right-0 bottom-0">
         <section className="absolute top-0 left-0 right-[380px] bottom-0 flex">
           <section className="absolute top-0 left-0 right-0 bottom-32 px-4 overflow-y-auto bg-gray-100">
-            <EventLog events={events} />
+            <EventLog />
           </section>
           <section className="absolute h-32 left-0 right-0 bottom-0 p-4">
             <SessionControls
               startSession={startSession}
               stopSession={stopSession}
-              isSessionActive={isSessionActive}
             />
           </section>
         </section>
         <section className="absolute top-0 w-[380px] right-0 bottom-0 p-4 pt-0 overflow-y-auto">
-          <Thread events={events} />
-          {/* <ToolPanel
-          sendClientEvent={sendClientEvent}
-          sendTextMessage={sendTextMessage}
-          events={events}
-          isSessionActive={isSessionActive}
-        /> */}
+          <Thread />
         </section>
       </main>
     </>

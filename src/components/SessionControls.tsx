@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { ReactNode } from 'react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store';
 
 interface ButtonProps {
   children: ReactNode;
@@ -55,14 +57,14 @@ function SessionActive({ stopSession }: { stopSession: () => void }) {
 interface SessionControlsProps {
   startSession: () => void;
   stopSession: () => void;
-  isSessionActive: boolean;
 }
 
 export default function SessionControls({
   startSession,
   stopSession,
-  isSessionActive,
 }: SessionControlsProps) {
+  const isSessionActive = useSelector((state: RootState) => state.events.isSessionActive);
+
   return (
     <div className="flex gap-4 border-t-2 border-gray-200 h-full rounded-md">
       {isSessionActive ? (
