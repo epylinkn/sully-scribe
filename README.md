@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+SULLY SCRIBE
+============
 
-## Getting Started
+STORES
+------
 
-First, run the development server:
+[ ] interpret between the clinician (English-speaking) and the patient (Spanish-speaking), using speech input and output
+[ ] support special inputs such as the patient saying “repeat that”, which should repeat the doctor’s previous sentence.
+[ ] At the end of the conversation, provide a summary of the conversation along with these actions if detected during the conversation: schedule followup appointment, send lab order.
+[ ] Add and use tools to execute the actions (use https://webhook.site/ to simulate calling an action)
+[ ] Store the full conversation and the summary in a database
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Deliverables:
+-------------
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Document the list of features you chose to build and why: provide product rationale
+2. Proof-of-concept: A functional prototype that enables communication between English and Spanish
+    - A feature complete UI
+    - Text-to-speech output for each utterance
+    - Display both sides of the conversation in English
+    - Display summary of the conversation
+    - Store the conversation and the summary in a database
+    - Display recognized intents/actions (listed above under Goals) along with their metadata
+    - Execute actions using tools (use https://webhook.site/)
+3. Technical Design Doc that captures your thought process
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+DEV
+---
 
-## Learn More
+Scenario: Doctor can record/stop a session
+As a doctor
+When I click record
+I can record a session
+And when I click stop
+I can rend recording of a session
 
-To learn more about Next.js, take a look at the following resources:
+--------
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+https://webhook.site/da3a130d-21d3-4bdd-b723-3c0fb145f8d7
