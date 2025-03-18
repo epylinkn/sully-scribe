@@ -171,7 +171,7 @@ export async function POST(
     if (!messages.length) {
       return NextResponse.json(
         { error: "No messages found for this session" },
-        { status: 404 }
+        { status: 204 }
       );
     }
 
