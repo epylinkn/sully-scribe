@@ -40,6 +40,7 @@ For me, if we think of this as a "hackathon demo", there are two wow features:
 
 As such, it was important to me to make these work.
 
+```
 The full happy path being:
 As a Clinician,
 When I press "Record",
@@ -56,6 +57,7 @@ When I press "End Visit"
 Then I am redirected to a VisitSummary page
 And the visit is summarized 
 And the visit is analyzed for key actions, e.g. "send_labs"
+```
 
 In implementing "realtime translation", I spent the majority of my time working with the Realtime API over WebRTC. I hadn't worked with it before, so it really took a large chunk of time to understand. While it was relatively quick to setup, I had a difficult time getting good results, and thus spent a lot of time trying to figure out ways to get better results.
 
