@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { setLanguageSchema } from "@/tools/setLanguage";
 import { getSystemPrompt } from "@/constants/prompts";
-import { processRealtimeMessageSchema } from "@/tools/processRealtimeMessage";
+import { processMessageTranslationSchema } from "@/tools/processMessageTranslation";
 import { repeatAudioSchema } from "@/tools/RepeatAudio";
 
 export async function GET() {
@@ -37,9 +37,9 @@ export async function GET() {
             },
             {
               type: "function",
-              name: processRealtimeMessageSchema.name,
-              description: processRealtimeMessageSchema.description,
-              parameters: processRealtimeMessageSchema.parameters,
+              name: processMessageTranslationSchema.name,
+              description: processMessageTranslationSchema.description,
+              parameters: processMessageTranslationSchema.parameters,
             },
             {
               type: "function",

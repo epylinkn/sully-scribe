@@ -7,8 +7,8 @@ export {
 } from './setLanguage';
 
 export {
-  processRealtimeMessageSchema
-} from './processRealtimeMessage';
+  processMessageTranslationSchema
+} from './processMessageTranslation';
 
 export {
   scheduleFollowupAppointment,
@@ -27,14 +27,14 @@ export {
 
 // Export all schemas as a collection for easy access
 import { setLanguageSchema } from './setLanguage';
-import { processRealtimeMessageSchema } from './processRealtimeMessage';
+import { processMessageTranslationSchema } from './processMessageTranslation';
 import { scheduleFollowupAppointmentSchema } from './ScheduleFollowupAppointment';
 import { sendLabOrderSchema } from './SendLabOrder';
 import { repeatAudioSchema } from './RepeatAudio';
 
 export const toolSchemas: ToolSchema[] = [
   setLanguageSchema,
-  processRealtimeMessageSchema,
+  processMessageTranslationSchema,
   scheduleFollowupAppointmentSchema,
   sendLabOrderSchema,
   repeatAudioSchema

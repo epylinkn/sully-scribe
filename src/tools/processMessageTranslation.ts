@@ -1,7 +1,7 @@
-export const processRealtimeMessageSchema = {
-  name: "processRealtimeMessage",
+export const processMessageTranslationSchema = {
+  name: "processMessageTranslation",
   description:
-    "Processes a message from OpenAI's realtime API and adds it to the conversation thread",
+    "Processes a message translation and adds it to the conversation thread",
   parameters: {
     type: "object",
     properties: {
@@ -13,7 +13,7 @@ export const processRealtimeMessageSchema = {
       originalText: {
         type: "string",
         description:
-          "The original content of the message from the realtime API",
+          "The original content of the message",
       },
       originalLanguage: {
         type: "string",
@@ -62,4 +62,4 @@ export const processRealtimeMessageSchema = {
     },
     required: ["isClinician", "originalLanguage", "originalText"],
   },
-};
+}; 
