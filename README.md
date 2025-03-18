@@ -6,11 +6,11 @@ SULLY SCRIBE
 STORIES
 ------
 
-[x] interpret between the clinician (English-speaking) and the patient (Spanish-speaking), using speech input and output
-[x] support special inputs such as the patient saying "repeat that", which should repeat the doctor's previous sentence.
-[x] At the end of the conversation, provide a summary of the conversation along with these actions if detected during the conversation: schedule followup appointment, send lab order.
-[x] Add and use tools to execute the actions (use https://webhook.site/ to simulate calling an action)
-[x] Store the full conversation and the summary in a database
+- [x] interpret between the clinician (English-speaking) and the patient (Spanish-speaking), using speech input and output
+- [x] support special inputs such as the patient saying "repeat that", which should repeat the doctor's previous sentence.
+- [x] At the end of the conversation, provide a summary of the conversation along with these actions if detected during the conversation: schedule followup appointment, send lab order.
+- [x] Add and use tools to execute the actions (use https://webhook.site/ to simulate calling an action)
+- [x] Store the full conversation and the summary in a database
 
 
 Deliverables:
